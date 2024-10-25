@@ -1,0 +1,8 @@
+name: 'Hammock Dave - Athena'
+type: module
+description: 'A module for the documentation system and related features'
+package: Custom
+core_version_requirement: ^8 || ^9 || ^10
+
+dependencies:
+  - drupal:menu_item_extras

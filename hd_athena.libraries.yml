@@ -1,0 +1,32 @@
+form-content-types-general:
+    version: VERSION
+    js:
+        js/content_types/content_type_forms.js: {}
+    css:
+        theme:
+            css/content_types/content_type_forms.css: {}
+    dependencies:
+        - core/jquery
+        - core/drupal
+        - core/drupal.debounce
+general-pages:
+    version: VERSION
+    js:
+        js/pages/general_pages.js: {}
+    dependencies:
+        - core/jquery
+athena-homepage:
+    version: VERSION
+    js:
+        js/homepage/homepage.js: {}
+    dependencies:
+        - core/jquery
+athena.toolbar-button:
+    version: VERSION
+    css:
+        theme:
+            css/admin/toolbar/toolbar.css: {}
+dialogs:
+    css:
+        theme:
+            css/dialogs/dialogs.css: {}

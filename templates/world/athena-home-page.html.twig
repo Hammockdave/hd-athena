@@ -1,0 +1,117 @@
+{{ attach_library('hd_athena/general-pages') }}
+{{ attach_library('hd_athena/athena-homepage') }}
+{% set max_items_menu_list = data.max_items_menu_list %}
+
+<div class="container-fluid athena-home-page mb-5">
+
+    <div class="main-layout row">
+
+    <div class="sidebar bg-gray-900 col-12 col-md-2 p-4 text-white">
+        {{ render_block_with_config('system_branding_block',{cta_link:'no_cta'}) }}
+        <hr>
+        <!-- Nav tabs -->
+        <ul class="athena-nav navbar-nav nav nav-pills">
+            <li class="nav-item">
+                <a class="nav-link active" data-toggle="pill" data-target="#home">Athena</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-toggle="pill" data-target="#my-content">My Content</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-toggle="pill" data-target="#all-content">All Content</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-toggle="pill" data-target="#add-content">Add Content</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-toggle="pill" data-target="#component-catalog">Component Catalog</a>
+            </li>
+
+        </ul>
+    </div>
+    <div class="col-12 col-md-10 p-0 bg-gray-100">
+        <div class="dashboard-header px-4 py-1 bg-white border-bottom border-top">
+            <div class="row align-items-center">
+                <div class="col-12 col-md-8">
+                    {% if data.search_block != false %}
+                        <div>Athena Search</div>
+                        <div class="search-box">
+                            {{ data.search_block }}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="col-12 col-md-4 text-right border-left">
+                    <div class="d-inline-flex mr-3">
+                        <div class="dropdown show">
+                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            {{ data.user_name }}
+                        </a>
+
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                            <a class="dropdown-item" href="/user">My Profile</a>
+                            <a class="dropdown-item" href="/user/logout">Logout</a>
+                        </div>
+                        </div>
+                    </div>
+                    <div class="d-inline-flex image">{{ data.picture }}</div>
+
+                </div>
+            </div>
+
+        </div>
+        <div class="dashboard-content p-4">
+
+            <div class="tab-content">
+                {# Main Athena Topics #}
+                <div class="tab-pane container active" id="home">
+                    <h3 class="mb-4">{{ data.title }}</h3>
+                    <h5>CMS Documentation</h5>
+                    <div class="desription mb-5">
+                        {{ data.body | raw }}
+                        {% include '@hd_athena/world/athena-cards.html.twig' %}
+                    </div>
+                    <hr>
+                </div>
+                {# User specific content #}
+                <div class="tab-pane container fade" id="my-content">
+                    <h3>My Content</h3>
+                    {{ drupal_view('user_content', 'athena_page') }}
+                </div>
+
+                {# All content #}
+                <div class="tab-pane container fade" id="all-content">
+                    <h3>All Content</h3>
+                    {{ drupal_view('user_content', 'all_content') }}
+                </div>
+
+                {# Links to add content#}
+                <div class="tab-pane container fade" id="add-content">
+                    <h3>Add Content</h3>
+                    <div class="card-columns">
+                        {% for machine_name,info in data.content_types %}
+                            <div class="card shadow border border-left-orange">
+                                <div class="card-body">
+                                    <h4 class="card-title">{{ info['name'] }}</h4>
+                                    <p class="card-text">{{ info['description'] }}</p>
+                                    <a href="/node/add/{{ machine_name }}" class="arrow-link" target="_blank">Create {{ info['name'] }}</a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                </div>
+
+                {# Component Catalog #}
+                <div class="tab-pane container fade" id="component-catalog">
+                    {{ drupal_view('athena_catalog', 'components') }}
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    </div>
+
+</div>

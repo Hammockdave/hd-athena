@@ -1,0 +1,22 @@
+entity.athena_ent.settings:
+  title: 'Settings'
+  route_name: entity.athena_ent.settings
+  base_route: entity.athena_ent.settings
+entity.athena_ent.view:
+  title: 'View'
+  route_name: entity.athena_ent.canonical
+  base_route: entity.athena_ent.canonical
+entity.athena_ent.edit_form:
+  title: 'Edit'
+  route_name: entity.athena_ent.edit_form
+  base_route: entity.athena_ent.canonical
+entity.athena_ent.delete_form:
+  title: 'Delete'
+  route_name: entity.athena_ent.delete_form
+  base_route: entity.athena_ent.canonical
+  weight: 10
+entity.athena_ent.collection:
+  title: 'Athenas'
+  route_name: entity.athena_ent.collection
+  base_route: system.admin_content
+  weight: 10

@@ -1,0 +1,18 @@
+<?php
+/**
+ * @file
+ * Install, uninstall, and update hooks of the module.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function hd_athena_install() {
+
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function hd_athena_uninstall() {
+}

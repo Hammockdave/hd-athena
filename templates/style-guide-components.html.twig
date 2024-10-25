@@ -1,0 +1,25 @@
+<div class="container">
+    <h4>Components rendering service</h4>
+    <ul>
+        <li>This feature will render components (paragraphs) as they are built on the site</li>
+        <li>Some components may not render properly unless viewed on the parent page</li>
+        <li>Certain components are 'child' components</li>
+        <ul>
+            <li>Because of the way the ajax works, and storing the selection in the url, you may need to refresh the page without
+            url parameters.</li>
+        </ul>
+    </ul>
+    <div class="row">
+        <div class="col-12">
+            {{ data.components_form }}
+        </div>
+
+    </div>
+  <div class="row">
+    <div class="col-12">
+      <div class="result_message"></div>
+    </div>
+  </div>
+</div>
+
+

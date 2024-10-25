@@ -1,0 +1,46 @@
+hd_athena.athena_home_page_edit_form:
+    path: '/admin/config/workfront/athena/athena-home-page-edit'
+    defaults:
+        _form: 'Drupal\hd_athena\Form\AthenaHomePageEditForm'
+        _title: 'Athena Home Page Edit Form'
+    requirements:
+        _permission: 'access administration pages'
+    options:
+        _admin_route: TRUE
+hd_athena.athena_home_page:
+    path: '/athena'
+    defaults:
+        _controller: 'Drupal\hd_athena\Controller\World\AthenaHomePage::content'
+        _title: 'Athena'
+    requirements:
+        _user_is_logged_in: 'TRUE'
+hd_athena.athena_popout:
+    path: '/athena-popout/callback'
+    defaults:
+        _controller: 'Drupal\hd_athena\Controller\World\AthenaPopOut::content'
+        _title: 'Athena'
+    requirements:
+        _user_is_logged_in: 'TRUE'
+hd_athena.athena_rebuild_url_aliases_form:
+    path: '/admin/config/workfront/athena/athena-rebuild-url-aliases'
+    defaults:
+        _form: 'Drupal\hd_athena\Form\AthenaRebuildUrlAliasesForm'
+        _title: 'Athena Rebuild Url Aliases'
+    requirements:
+        _permission: 'access administration pages'
+    options:
+        _admin_route: TRUE
+entity.athena_ent.settings:
+  path: 'admin/structure/athena-ent'
+  defaults:
+    _form: '\Drupal\hd_athena\Form\AthenaSettingsForm'
+    _title: 'Athena'
+  requirements:
+    _permission: 'administer athena_ent'
+style_guide_components.content:
+  path: 'hd-styleguide/components'
+  defaults:
+    _controller: '\Drupal\hd_athena\Controller\hdComponents::content'
+    _title: 'Hammock Dave Style Guide - Components'
+  requirements:
+    _permission: 'view style guides'

@@ -1,0 +1,41 @@
+hd_athena.athena_home_page:
+    title: 'Athena'
+    description: 'Athena'
+    parent: athena-main-menu
+    menu_name: athena-main-menu
+    route_name: hd_athena.athena_home_page
+hd_athena.links_menu.athena_rebuild_url_aliases_form:
+    title: 'Athena Rebuild Url Aliases'
+    description: 'Athena Rebuild Url Aliases'
+    parent: athena-main-menu
+    menu_name: athena-main-menu
+    route_name: hd_athena.athena_rebuild_url_aliases_form
+hd_athena.popout:
+    route_name: 'hd_athena.athena_popout'
+    title: 'Athena'
+    description: 'The Athena documentation system.'
+    parent: 'system.admin'
+    weight: 7
+    class: Drupal\hd_athena\Plugin\Menu\AthenaMenu
+    options:
+        attributes:
+            class:
+                - 'use-ajax'
+            data-dialog-type:
+                - 'dialog'
+            data-dialog-renderer:
+                - 'off_canvas'
+            data-dialog-options:
+                - '{"width":400,"dialogClass":"athena-dialog"}'
+
+entity.athena_ent.settings:
+  title: 'Athena'
+  description: 'Configure an Athena entity type.'
+  route_name:  entity.athena_ent.settings
+  parent: system.admin_structure
+
+entity.athena_ent.collection:
+  title: 'Athenas'
+  description: 'List of athenas.'
+  route_name: entity.athena_ent.collection
+  parent: system.admin_content

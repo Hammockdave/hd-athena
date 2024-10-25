@@ -1,0 +1,48 @@
+{% block cards %}
+        <div class="row">
+            {% if not (data.menu['submenu-0'].child.isEmpty == true) and data.menu['submenu-0'].child is defined %}
+                {% for item in data.menu['submenu-0'].child %}
+                    <div class="col-12 col-md-6 col-lg-3 mb-3 main-topic">
+                        <div class="card border-left-orange shadow h-100 py-2 border shadow p-3 equal-height mb-3">
+                            <h3><a href="{{ item.url_str }}">{{ item.name }}</a></h3>
+                            <div class="menu-description">
+                                {% if item.description != false %}
+                                    {{ item.description }}
+                                {% endif %}
+                            </div>
+                            {% if not (item.child.isEmpty == true) and item.child is defined %}
+                                {% set number_menu_items =  item.child | length %}
+                                {% set count = 1 %}
+                                <ul>
+                                    {% for link in item.child %}
+                                        {% if count <=  max_items_menu_list %}
+                                            <li>
+                                                <a href="{{ link.url_str }}">
+                                                    {{ link.name }}
+                                                </a>
+                                            </li>
+                                        {% else %}
+                                            <li class="hidden-menu-item" style="display: none;">
+                                                <a href="{{ link.url_str }}">
+                                                    {{ link.name }}
+                                                </a>
+                                            </li>
+                                        {% endif %}
+                                        {% set count = count + 1 %}
+                                    {% endfor %}
+                                </ul>
+                                {% if  number_menu_items > max_items_menu_list %}
+                                    <div class="show-hide-more show">
+                                        <a href="javascript:void(0);">
+                                            Show more...
+                                        </a>
+                                    </div>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+
+{% endblock %}

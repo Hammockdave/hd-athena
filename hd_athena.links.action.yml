@@ -1,0 +1,14 @@
+hd_athena.eck.route_tagging_add_content:
+    route_name: eck.entity.add
+    title: 'Add New Route Tagging'
+    route_parameters:
+        eck_entity_type: 'athena_eck'
+        eck_entity_bundle: 'route_tagging'
+    appears_on:
+        - view.route_tagging_list.page_1
+
+athena_ent.add_form:
+  title: 'Add athena'
+  route_name: entity.athena_ent.add_form
+  appears_on:
+    - entity.athena_ent.collection

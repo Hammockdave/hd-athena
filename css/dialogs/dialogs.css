@@ -1,0 +1,55 @@
+.athena-dialog {
+  z-index: 2147483643;
+  box-shadow: -5px 0 15px;
+}
+
+.athena-dialog .ui-widget-content.ui-dialog-content {
+  background-color: #fff;
+  position: relative;
+}
+
+.athena-dialog .ui-widget-content.ui-dialog-content .body {
+  font: normal 81.3%/1.538em "Lucida Grande", "Lucida Sans Unicode", "DejaVu Sans", "Lucida Sans", sans-serif
+}
+
+.athena-dialog .ui-widget-content.ui-dialog-content .athena-doc-listing {
+  border: 1px solid #ccc;
+  padding: 5px;
+  box-shadow: 5px 5px 5px #ccc;
+  margin-bottom: 15px;
+}
+
+.athena-dialog .ui-widget-content.ui-dialog-content .admin-info {
+  position: absolute;
+  bottom: 0;
+}
+
+.athena-dialog #drupal-off-canvas *,
+.athena-dialog #drupal-off-canvas *:not(div) {
+  background-color: transparent;
+  color: #000000;
+  cursor: pointer;
+}
+
+.athena-dialog #drupal-off-canvas .btn {
+  display: inline-block;
+  font-weight: 600;
+  color: #373737;
+  text-align: center;
+  vertical-align: middle;
+  user-select: none;
+  background-color: transparent;
+  border: 1px solid transparent;
+  padding: .5rem 1rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  border-radius: 2px;
+  transition: color 0.15s ease-in-out,background-color 0.15s ease-in-out,border-color 0.15s ease-in-out,box-shadow 0.15s ease-in-out;
+}
+
+.athena-dialog #drupal-off-canvas .btn-primary {
+  color: #fff;
+  cursor: pointer;
+  background-color: #07d;
+  border-color: #07d;
+}

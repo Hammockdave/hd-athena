@@ -1,0 +1,34 @@
+/* Bar formatting */
+.toolbar-bar .toolbar-icon-hd-athena-popout:before {
+    background-image: url("athena.png");
+    background-size: 90% auto;
+}
+.toolbar-bar .toolbar-icon-hd-athena-popout:active:before,
+.toolbar-bar .toolbar-icon-hd-athena-popout.active:before {
+    background-image: url("athena.png");
+    background-size: 90% auto;
+}
+
+/* Tray formatting */
+.toolbar .toolbar-tray .toolbar-icon.toolbar-icon-hd-athena-popout:before {
+    background-image: url("athena.png");
+    background-size: 90% auto;
+}
+.toolbar .toolbar-tray .toolbar-icon.toolbar-icon-hd-athena-popout:active:before,
+.toolbar .toolbar-tray .toolbar-icon.toolbar-icon-hd-athena-popout.active:before {
+    background-image: url("athena.png");
+    background-size: 90% auto;
+}
+
+.athena-component-link {
+    font-size: 0;
+}
+.athena-component-link:before {
+    content: '';
+    background-image: url("athena.png");
+    width: 14px;
+    height: 18px;
+    display: block;
+    background-size: cover;
+    background-repeat: no-repeat;
+}

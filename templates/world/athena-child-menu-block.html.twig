@@ -1,0 +1,34 @@
+{{ attach_library('hd_athena/general-pages') }}
+{% set max_items_menu_list = 15 %}
+<!-- Menu Children -->
+{% if data.menu != false %}
+    <div class="athena-child-menu-block main-topic">
+        {% set number_menu_items =  data.menu | length %}
+        {% set count = 1 %}
+        <ul>
+            {% for link in data.menu %}
+                {% if count <=  max_items_menu_list %}
+                    <li>
+                        <a href="{{ link.url_str }}">
+                            {{ link.name }}
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="hidden-menu-item" style="display: none;">
+                        <a href="{{ link.url_str }}">
+                            {{ link.name }}
+                        </a>
+                    </li>
+                {% endif %}
+                {% set count = count + 1 %}
+            {% endfor %}
+            {% if  number_menu_items > max_items_menu_list %}
+                <li class="show-hide-more show">
+                    <a href="javascript:void(0);">
+                        Show more...
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </div>
+{% endif %}

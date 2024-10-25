@@ -1,0 +1,10 @@
+entity.athena_ent.edit_form:
+  route_name: entity.athena_ent.edit_form
+  group: athena_ent
+  title: 'Edit'
+
+entity.athena_ent.delete_form:
+  route_name: entity.athena_ent.delete_form
+  group: athena_ent
+  title: 'Delete'
+  weight: 10

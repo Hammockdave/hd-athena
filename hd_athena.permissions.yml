@@ -1,0 +1,24 @@
+administer athena types:
+  title: 'Administer athena types'
+  description: 'Maintain the types of athena entity.'
+  restrict access: true
+view athena:
+  title: 'View athena'
+edit athena:
+  title: 'Edit athena'
+delete athena:
+  title: 'Delete athena'
+create athena:
+  title: 'Create athena'
+
+administer athena_ent:
+  title: 'Administer athenas'
+  restrict access: true
+view athena_ent:
+  title: 'View athena'
+edit athena_ent:
+  title: 'Edit athena'
+delete athena_ent:
+  title: 'Delete athena'
+create athena_ent:
+  title: 'Create athena'

@@ -1,0 +1,10 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - hd_athena
+id: athena_ent_delete_action
+label: 'Delete athenas'
+type: athena_ent
+plugin: entity:delete_action:athena_ent
+configuration: {  }

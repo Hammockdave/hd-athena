@@ -1,0 +1,34 @@
+services:
+    theme.negotiator.athena:
+        class: Drupal\hd_athena\Theme\ThemeNegotiator
+        arguments: ['@path.matcher']
+        tags:
+            - { name: theme_negotiator, priority: 999 }
+    hd_athena.athena_core_api:
+        class: Drupal\hd_athena\Services\AthenaCoreApi
+        arguments: ['@hd_athena.entity_core_helper', '@hd_athena.taxonomy_helper', '@database']
+    hd_athena.athena_external_api:
+        class: Drupal\hd_athena\Services\AthenaExternalApi
+        arguments: ['@hd_athena.athena_core_api', '@messenger', '@current_route_match', '@router.route_provider', '@hd_athena.athena_route_docs', '@entity_type.manager']
+    hd_athena.athena_menu_core_api:
+        class: Drupal\hd_athena\Services\AthenaMenuCoreApi
+        arguments: ['@hd_athena.entity_core_helper']
+    hd_athena.athena_route_docs:
+        class: Drupal\hd_athena\Services\AthenaRouteDocs
+        arguments: ['@hd_athena.athena_core_api', '@messenger', '@current_route_match', '@router.route_provider', '@router.no_access_checks']
+    hd_athena.entity_core_helper:
+      class: Drupal\hd_athena\Services\EntityCoreHelper
+      arguments: ['@entity_type.manager', '@entity_type.bundle.info']
+    hd_athena.general_functions:
+      class: Drupal\hd_athena\Services\GeneralFunctions
+      arguments: ['@path.current','@path_alias.manager', '@path.matcher']
+    hd_athena.taxonomy_helper:
+      class: Drupal\hd_athena\Services\TaxonomyCoreHelper
+      arguments: ['@hd_athena.entity_core_helper', '@language_manager', '@entity.repository', '@hd_athena.render_core_helper']
+    hd_athena.render_core_helper:
+      class: Drupal\hd_athena\Services\RenderCoreHelper
+      arguments: ['@image.factory', '@renderer', '@hd_athena.entity_core_helper', '@entity.repository']
+    hd_athena.twig_extension:
+      class: Drupal\hd_athena\Twig\TwigExtension
+      tags:
+        - { name: twig.extension }

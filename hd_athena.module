@@ -1,0 +1,441 @@
+<?php
+
+use Drupal\Component\Serialization\Json;
+use \Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Link;
+use Drupal\Core\Url;
+use Drupal\user\UserInterface;
+use Drupal\Core\Render\Element;
+
+// General function for Athena
+function getAthenaContentTypes() {
+    $contentTypes = [];
+    $contentTypes['athena_general'] = 'Athena - General';
+
+    return $contentTypes;
+}
+
+function hd_athena_get_paragraph_bundles() {
+  $paragraphBundles = [];
+  $bundle_info = \Drupal::service('entity_type.bundle.info')->getBundleInfo('paragraph');
+  foreach ($bundle_info as $bundle => $info) {
+    $paragraphBundles[$bundle] = $info['label'];
+  }
+  return $paragraphBundles;
+}
+
+function hd_athena_get_node_bundles() {
+  $nodeBundles = [];
+  $bundle_info = \Drupal::service('entity_type.bundle.info')->getBundleInfo('node');
+  foreach ($bundle_info as $bundle => $info) {
+    $nodeBundles[$bundle] = $info['label'];
+  }
+  return $nodeBundles;
+}
+
+/**
+ * Implements hook_field_widget_entity_reference_paragraphs_form_alter().
+ */
+function hd_athena_field_widget_single_element_form_alter(array &$element, FormStateInterface &$form_state, array $context) {
+    pluginformalter_alter_paragraphs($element, $form_state);
+}
+
+/**
+ * Utility function used to alter paragraphs forms.
+ *
+ * @param array $element
+ *   The form element.
+ * @param Drupal\Core\Form\FormStateInterface $form_state
+ *   The form state instance.
+ */
+function pluginformalter_alter_paragraphs(array &$element, FormStateInterface &$form_state) {
+  if (empty($element['#paragraph_type'])) {
+    return;
+  }
+  $element['subform']['#prefix'] = _hd_athena_create_popout_link('paragraph',$element['#paragraph_type'],'Show component documentation');
+}
+
+/**
+ * Create a popout link
+ *
+ * @var $type
+ *  i.e. 'paragraph','content_editing'... Correlates to the 'General Tags' on the Athena content type
+ *
+ * @var $component
+ *  If this covers a specific bundle or entity, input the machine name here. i.e. card_deck, blog, etc.
+ *  This will be used to help how the documentation is displayed such as a sidebar list, or a modal
+ *  popup
+ *
+ * @var $mode
+ *  When the documentation content is displayed, we can show a listing view, or a more robust display
+ *
+ * @var $method
+ *  Whether or not the dialog is a 'modal' or 'dialog' (dialog pushes the screen to show)
+ *
+ */
+function _hd_athena_create_popout_link($component, $bundle, $title = 'Show documentation') {
+    // Set up some options to make an easy edit link
+    $attributes = [
+        'class' => ['use-ajax','athena-component-link'],
+        'data-dialog-type' => 'modal',
+        'data-dialog-options' => Json::encode(['width' => 800]),
+    ];
+
+
+    $link_options = array(
+        'absolute'   => TRUE,
+        //'query' => \Drupal::service('redirect.destination')->getAsArray(),
+        'query' => ['component' => $component,'bundle' => $bundle,'view_mode' => 'teaser2'],
+        'attributes' => $attributes,
+        '#attached' => [
+            'library' => [
+                'core/drupal.dialog.ajax',
+            ],
+        ],
+    );
+
+    // Build the URL to edit with the options to use a popup
+    $url = Url::fromUri('internal:/athena-popout/callback', $link_options);
+    $link = Link::fromTextAndUrl($title,$url);
+    return $link->toString();
+}
+
+/**
+ * Implements hook_entity_presave().
+ */
+function hd_athena_entity_presave(Drupal\Core\Entity\EntityInterface $entity) {
+    $athenaContentTypes = getAthenaContentTypes();
+
+    if ($entity->getEntityType()->id() === 'node' && array_key_exists($entity->bundle(), $athenaContentTypes)) {
+        $generalFunctions = \Drupal::service('hd_athena.general_functions');
+        // Update the Last User field with the currently logged in user
+        if ($entity->hasField('field_user_ref_single')) {
+            $currentUserId = \Drupal::currentUser()->id();
+            $loadedCurrentUser = \Drupal\user\Entity\User::load($currentUserId);
+            $entity->set('field_user_ref_single', $loadedCurrentUser);
+        }
+
+        // Cleanup the Custom Routes list
+        if ($entity->hasField('field_plain_long_single')) {
+            $customRoutesValue = $entity->get('field_plain_long_single')->getValue();
+            if (isset($customRoutesValue['0']['value']) && !empty($customRoutesValue['0']['value'])) {
+                $customRoutesValue = $customRoutesValue['0']['value'];
+                $customRoutesValue = explode(PHP_EOL, $customRoutesValue);
+                $newCustomRouteValue = [];
+                foreach ($customRoutesValue as $key => $routeName) {
+                    $tempRoute = $generalFunctions->getRawStringFromHtml($routeName);
+                    if (!empty($tempRoute)) {
+                        $newCustomRouteValue[] = $tempRoute;
+                    }
+                    unset($tempRoute);
+                }
+                $newCustomRouteValue = implode(PHP_EOL, $newCustomRouteValue);
+                $newCustomRouteTempFieldValue = [];
+                $newCustomRouteTempFieldValue['0']['value'] = $newCustomRouteValue;
+                $entity->set('field_plain_long_single', $newCustomRouteTempFieldValue);
+            }
+        }
+    }
+
+    // Athena ECK Route Tagging
+    if ($entity->getEntityType()->id() === 'athena_eck' && $entity->bundle() === 'route_tagging') {
+        // Updated the computed value field
+        $routeName = $entity->get('field_route_name')->getValue();
+        $computedRouteName = trim($routeName['0']['value']);
+
+        // Get the route parameters if there are any
+        $routeParameters = $entity->get('field_route_parameters')->getValue();
+        if (!empty($routeParameters)) {
+            foreach ($routeParameters as $key => $array) {
+                if (isset($array['value']) && strlen(trim($array['value'])) >= 1) {
+                    $computedRouteName .= ':' . trim($array['value']);
+                }
+            }
+        }
+        $newComputedRouteValue = [];
+        $newComputedRouteValue['0']['value'] = $computedRouteName;
+        $entity->set('field_computed_route_name', $newComputedRouteValue);
+    }
+
+}
+
+function athena_eck_route_tagging_form_custom_validation(array &$form, FormStateInterface $form_state) {
+    $values = $form_state->getValues();
+    $routeName = $form_state->getValue('field_route_name');
+    $routeParameters = $form_state->getValue('field_route_parameters');
+    $computedRouteName = $routeName['0']['value'];
+
+    if (isset($routeParameters['0']['value']) && !empty($routeParameters['0']['value'])) {
+        foreach ($routeParameters as $key => $array) {
+            if (is_numeric($key) && isset($array['value']) && strlen(trim($array['value'])) >= 1) {
+                $computedRouteName .= ':' . trim($array['value']);
+            }
+        }
+    }
+    $athenaExternalApi = \Drupal::service('hd_athena.athena_external_api');
+    $routeTaggingUrl = $athenaExternalApi->doesRouteTaggingComputedValueAlreadyExist($computedRouteName);
+    if ($routeTaggingUrl !== FALSE) {
+        $message = 'This route and parameters already exists. ';
+        $message .= '<a href="' . $routeTaggingUrl . '" target="_blank">Click here</a> to edit that one instead';
+        $form_state->setErrorByName('field_route_name', \Drupal\Core\Render\Markup::create($message));
+    }
+
+}
+
+
+function athena_form_custom_validation(array &$form, FormStateInterface $form_state) {
+    $values = $form_state->getValues();
+    $currentNodeId = $form_state->getformObject()->getEntity()->id();
+    $generalFunctions = \Drupal::service('hd_athena.general_functions');
+
+    // Make sure nothing gets assigned to the root directory of the Athena Menu.
+    if (isset($values['menu']['menu_parent']) && $values['menu']['menu_parent'] === 'athena-main-menu:') {
+        $form_state->setErrorByName('menu', 'You must assign the content to a parent item that is assigned to the Athena menu item.');
+    }
+
+    // Make sure nothing gets assigned to the Athena menu item which is the home page of Athena
+    // The direct children of the Athena menu item represent the main categories that documentation should be assigned to.
+    // If we want to add another direct child to the Athena menu item then a developer will need to do that manually from the Athena menu itself
+    if (isset($values['menu']['menu_parent']) && $values['menu']['menu_parent'] === 'athena-main-menu:hd_athena.athena_home_page') {
+        $athenaMenuCoreApi = \Drupal::service('hd_athena.athena_menu_core_api');
+        $menuLinkId = $athenaMenuCoreApi->stripMenuLinkContentStringFromUuid($values['menu']['id']);
+        $isMainCategory = $athenaMenuCoreApi->getMenuLinkContentFieldValue($menuLinkId, 'field_boolean_single');
+
+        if ($isMainCategory !== FALSE) {
+            if (empty($isMainCategory)) {
+                $form_state->setErrorByName('menu', 'You must assign the content to a parent item that is assigned to the Athena menu item.');
+            } elseif (isset($isMainCategory['0']['value']) && $isMainCategory['0']['value'] === '0') {
+                $form_state->setErrorByName('menu', 'You must assign the content to a parent item that is assigned to the Athena menu item.');
+            }
+        }
+    }
+
+    // Make sure that if the Paragraph Type is set that there's no other documentation for that Paragraph Type,
+    // We don't need two sets of documentation for the same Paragraph Type
+    if (!empty($values['field_ref_paragraph_type_single']['0']['target_id'])) {
+        $athenaExternalApi = \Drupal::service('hd_athena.athena_external_api');
+        $lookupParagraphTypes = $athenaExternalApi->getAthenaDocsForParagraphType($values['field_ref_paragraph_type_single']['0']['target_id']);
+
+        if (isset($lookupParagraphTypes[$currentNodeId])) {
+            unset($lookupParagraphTypes[$currentNodeId]);
+        }
+
+        if (!empty($lookupParagraphTypes)) {
+            $lookupParagraphTypes = reset($lookupParagraphTypes);
+            $paragraphTypeMessage = 'There is already documentation for the chosen Paragraph Type. Please update that documentation instead:<br>';
+            $paragraphTypeMessage .= '<a href="/node/' . $lookupParagraphTypes->id() . '/edit" target="_blank">' . $lookupParagraphTypes->label() . '</a>';
+            $paragraphTypeMessage = \Drupal\Core\Render\Markup::create($paragraphTypeMessage);
+            $form_state->setErrorByName('field_ref_paragraph_type_single', $paragraphTypeMessage);
+        }
+
+    }
+
+    // Make sure the Custom Routes are valid
+    if (isset($values['field_plain_long_single']['0']['value']) && !empty(trim($values['field_plain_long_single']['0']['value']))) {
+        $route_provider = \Drupal::service('router.route_provider');
+        $customRoutes = explode(PHP_EOL, $values['field_plain_long_single']['0']['value']);
+        $routeErrorMessage = 'The following custom route(s) are not valid:<br>';
+        $routeStatus = TRUE;
+
+        foreach ($customRoutes as $key => $routeName) {
+            $routeName = $generalFunctions->getRawStringFromHtml($routeName);
+            if (empty($routeName)) {
+                continue;
+            }
+            // Explode the route since it may have parameters included
+            $routeName = explode(':', $routeName);
+            $routeName = $routeName['0'];
+
+            try {
+                $route_provider->getRouteByName($routeName);
+            } catch (\Exception $e) {
+                $routeErrorMessage .= '<strong>' . $routeName . '</strong><br>';
+                $routeStatus = FALSE;
+            }
+        }
+        if ($routeStatus === FALSE) {
+            $form_state->setErrorByName('field_plain_long_single', \Drupal\Core\Render\Markup::create($routeErrorMessage));
+        }
+    }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function hd_athena_theme($existing, $type, $theme, $path) {
+  return [
+    'athena-home-page' => [
+        'variables' => ['data' => NULL],
+        'template' => 'world/athena-home-page',
+    ],
+    'athena_child_menu_block' => [
+        'variables' => ['data' => NULL],
+        'template' => 'world/athena-child-menu-block',
+    ],
+    'athena_dialog_content_view' => [
+        'variables' => ['data' => NULL],
+        'template' => 'world/athena-dialog-content-view',
+    ],
+    'athena_ent' => ['render element' => 'elements'],
+    'style_guide_components' => array(
+      'variables' => array('data' => null),
+      'template' => 'style-guide-components',
+    ),
+  ];
+}
+
+/**
+ * Implements hook_toolbar().
+ */
+function hd_athena_toolbar() {
+    $items = [];
+    $items['athena'] = [
+        '#type' => 'toolbar_item',
+        '#attached' => [
+            'library' => [
+                'core/drupal.dialog.ajax',
+                'hd_athena/athena.toolbar-button',
+            ],
+        ],
+    ];
+
+    return $items;
+}
+
+/**
+ * Implements hook_entity_update(). // This gets called when "EXISTING" entities are edited and saved.
+ */
+function hd_athena_entity_update(Drupal\Core\Entity\EntityInterface $entity) {
+    if ($entity->bundle() === 'field_config' && $entity->isUninstalling() === FALSE && $entity->isSyncing() === FALSE && $entity->isNew() === FALSE) {
+        $configExport = $entity->toArray();
+        $athenaExternalApi = \Drupal::service('hd_athena.athena_external_api');
+        // We only want to deal with Paragraphs
+        if (isset($configExport['entity_type']) && $configExport['entity_type'] === 'paragraph' && isset($configExport['bundle'])) {
+            $paragraphType = $configExport['bundle'];
+            $athenaExternalApi->sendParagraphUpdatedMessage($paragraphType);
+        }
+
+        // We only want to deal with Content Types
+        if (isset($configExport['entity_type']) && $configExport['entity_type'] === 'node' && isset($configExport['bundle'])) {
+            $contentType = $configExport['bundle'];
+            $athenaExternalApi->sendContentTypeUpdatedMessage($contentType);
+        }
+    }
+}
+
+/**
+ * Implements hook_preprocess_menu_local_action().
+ */
+function hd_athena_preprocess_menu_local_action(&$variables) {
+    $current_route_match = \Drupal::service('current_route_match');
+    $route_name = $current_route_match->getRouteName();
+
+    // If we're on : /athena/developer/athena/route-tagging-list
+    // Then add a destination to the local task "Add New Route Tagging" url query
+    if ($route_name === 'view.route_tagging_list.page_1' && isset($variables['link']['#url'])) {
+        $urlObject = $variables['link']['#url'];
+        if ($urlObject instanceof \Drupal\Core\Url && $urlObject->getRouteName() === 'eck.entity.add') {
+            $routeParameters = $urlObject->getRouteParameters();
+            if (isset($routeParameters['eck_entity_bundle']) && $routeParameters['eck_entity_bundle'] === 'route_tagging') {
+                $currentOptions = $urlObject->getOptions();
+                $destination = \Drupal::destination()->get();
+                $currentOptions['query'] = ['destination' => $destination];
+                $urlObject->setOptions($currentOptions);
+                $variables['link']['#url'] = $urlObject;
+            }
+        }
+
+    }
+}
+
+/**
+ * Implements hook_page_attachments().
+ */
+function hd_athena_page_attachments(array &$attachments) {
+    $attachments['#attached']['library'][] = 'hd_athena/dialogs';
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function hd_athena_form_user_login_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+    $destination = \Drupal::request()->query->get('destination');
+    if ($destination && $destination != '/user/login') {
+        return;
+    } else {
+        $form['#submit'][] = 'hd_athena_user_login_form_submit';
+    }
+}
+
+/**
+ * Custom submit handler for the login form.
+ */
+function hd_athena_user_login_form_submit($form, FormStateInterface $form_state) {
+    $url = Url::fromRoute('hd_athena.athena_home_page');
+    $form_state->setRedirectUrl($url);
+}
+
+/**
+ * Prepares variables for athena templates.
+ *
+ * Default template: athena-ent.html.twig.
+ *
+ * @param array $variables
+ *   An associative array containing:
+ *   - elements: An associative array containing the athena information and any
+ *     fields attached to the entity.
+ *   - attributes: HTML attributes for the containing element.
+ */
+function template_preprocess_athena_ent(array &$variables): void {
+  $variables['view_mode'] = $variables['elements']['#view_mode'];
+  foreach (Element::children($variables['elements']) as $key) {
+    $variables['content'][$key] = $variables['elements'][$key];
+  }
+}
+
+/**
+ * Implements hook_user_cancel().
+ */
+function hd_athena_user_cancel($edit, UserInterface $account, $method): void {
+  switch ($method) {
+    case 'user_cancel_block_unpublish':
+      // Unpublish athenas.
+      $storage = \Drupal::entityTypeManager()->getStorage('athena_ent');
+      $athena_ent_ids = $storage->getQuery()
+        ->condition('uid', $account->id())
+        ->condition('status', 1)
+        ->accessCheck(FALSE)
+        ->execute();
+      foreach ($storage->loadMultiple($athena_ent_ids) as $athena_ent) {
+        $athena_ent->set('status', FALSE)->save();
+      }
+      break;
+
+    case 'user_cancel_reassign':
+      // Anonymize athenas.
+      $storage = \Drupal::entityTypeManager()->getStorage('athena_ent');
+      $athena_ent_ids = $storage->getQuery()
+        ->condition('uid', $account->id())
+        ->accessCheck(FALSE)
+        ->execute();
+      foreach ($storage->loadMultiple($athena_ent_ids) as $athena_ent) {
+        $athena_ent->setOwnerId(0)->save();
+      }
+      break;
+  }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_predelete() for user entities.
+ */
+function hd_athena_user_predelete(UserInterface $account): void {
+  // Delete athenas that belong to this account.
+  $storage = \Drupal::entityTypeManager()->getStorage('athena_ent');
+  $athena_ent_ids = $storage->getQuery()
+    ->condition('uid', $account->id())
+    ->accessCheck(FALSE)
+    ->execute();
+  $storage->delete(
+    $storage->loadMultiple($athena_ent_ids)
+  );
+}
